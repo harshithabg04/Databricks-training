@@ -1,341 +1,431 @@
-**Schema (MySQL v5.7)**
-
-
-    -- SQL Joins Assignment Starter File
-    -- Compatible with PostgreSQL
-
-    DROP TABLE IF EXISTS enrollments;
-    DROP TABLE IF EXISTS courses;
-    DROP TABLE IF EXISTS students;
-    DROP TABLE IF EXISTS instructors;
-
-    CREATE TABLE instructors (
-        instructor_id INT PRIMARY KEY,
-        instructor_name VARCHAR(100),
-        department VARCHAR(100)
+ CREATE TABLE employees (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    manager_id INT,
+    dept_id INT
     );
-
-    CREATE TABLE students (
-        student_id INT PRIMARY KEY,
-        student_name VARCHAR(100),
-        email VARCHAR(100)
+    INSERT INTO employees (emp_id, emp_name, manager_id, dept_id) VALUES
+    (1, 'Karthik', NULL, 1),
+    (2, 'Ajay', 1, 1),
+    (3, 'Vijay', 1, 2),
+    (4, 'Vinay', 2, 2),
+    (5, 'Meena', 3, 3),
+    (6, 'Veer', NULL, 4),
+    (7, 'Keerthi', 4, 5),
+    (8, 'Priya', 4, 5);
+    
+    
+    CREATE TABLE departments (
+    dept_id INT PRIMARY KEY,
+    dept_name VARCHAR(50)
     );
-
-    CREATE TABLE courses (
-        course_id INT PRIMARY KEY,
-        course_name VARCHAR(100),
-        instructor_id INT NULL,
-        FOREIGN KEY (instructor_id) REFERENCES instructors(instructor_id)
+    
+    INSERT INTO departments (dept_id, dept_name) VALUES
+    (1, 'HR'),
+    (2, 'IT'),
+    (3, 'Finance'),
+    (4, 'Marketing'),
+    (5, 'Sales');
+    
+    
+    CREATE TABLE projects (
+    project_id INT PRIMARY KEY,
+    project_name VARCHAR(50),
+    emp_id INT
     );
-
-    CREATE TABLE enrollments (
-        enrollment_id INT PRIMARY KEY,
-        student_id INT,
-        course_id INT,
-        enrollment_date DATE,
-        FOREIGN KEY (student_id) REFERENCES students(student_id),
-        FOREIGN KEY (course_id) REFERENCES courses(course_id)
-    );
-
-    -- Insert instructors
-    INSERT INTO instructors VALUES
-    (1, 'Sarah Connor', 'Databases'),
-    (2, 'Michael Scott', 'Programming'),
-    (3, 'Tony Stark', 'Cloud Computing'),
-    (4, 'Bruce Wayne', 'Cyber Security');
-
-    -- Insert students
-    INSERT INTO students VALUES
-    (1, 'Alice Johnson', 'alice@email.com'),
-    (2, 'Bob Smith', 'bob@email.com'),
-    (3, 'Charlie Brown', 'charlie@email.com'),
-    (4, 'Diana Prince', 'diana@email.com'),
-    (5, 'Ethan Hunt', 'ethan@email.com'),
-    (6, 'Fiona Green', 'fiona@email.com');
-
-    -- Insert courses
-    INSERT INTO courses VALUES
-    (101, 'SQL Basics', 1),
-    (102, 'Python Fundamentals', 2),
-    (103, 'Data Analytics', NULL),
-    (104, 'Cloud Computing', 3),
-    (105, 'Machine Learning', NULL),
-    (106, 'Cyber Security', 4);
-
-    -- Insert enrollments
-    INSERT INTO enrollments VALUES
-    (1, 1, 101, '2024-01-10'),
-    (2, 1, 102, '2024-01-12'),
-    (3, 2, 101, '2024-01-15'),
-    (4, 3, 104, '2024-01-20'),
-    (5, 4, 106, '2024-01-25');
-
-    -- Notes:
-    -- Student 5 and 6 are not enrolled in any course.
-    -- Courses 103 and 105 have no instructor assigned.
-    -- Courses 103 and 105 also have no enrollments.
-    -- Instructor 4 teaches one course.
-
+    
+    INSERT INTO projects (project_id, project_name, emp_id) VALUES
+    (1, 'Project A', 1),
+    (2, 'Project B', 2),
+    (3, 'Project C', 3),
+    (4, 'Project D', 4),
+    (5, 'Project E', 5);
+    
 
 ---
 
-**Query #1**
+**Query #1**--. Retrieve the names of employees and their corresponding managers from the "employees"
+--table, ensuring that even employees without managers are included.
 
-    -- 1. Display all students and the courses they are enrolled in. Include students who are not enrolled in any course.
+    SELECT e.emp_name,m.emp_name FROM employees e LEFT JOIN employees m ON e.manager_id=m.emp_id;
 
-    SELECT s.student_name, c.course_name
-    FROM students s
-    LEFT JOIN enrollments e
-    ON s.student_id = e.student_id
-    LEFT JOIN courses c
-    ON e.course_id = c.course_id;
-
-| student_name  | course_name         |
-| ------------- | ------------------- |
-| Alice Johnson | SQL Basics          |
-| Alice Johnson | Python Fundamentals |
-| Bob Smith     | SQL Basics          |
-| Charlie Brown | Cloud Computing     |
-| Diana Prince  | Cyber Security      |
-| Ethan Hunt    |                     |
-| Fiona Green   |                     |
+| emp_name | emp_name |
+| -------- | -------- |
+| Karthik  |          |
+| Ajay     | Karthik  |
+| Vijay    | Karthik  |
+| Vinay    | Ajay     |
+| Meena    | Vijay    |
+| Veer     |          |
+| Keerthi  | Vinay    |
+| Priya    | Vinay    |
 
 ---
-**Query #2**
+**Query #2**--. Display all employees and their corresponding departments from the "employees" and "departments" tables, showing employees even if they don't belong to any department.
 
-    -- 2. Find all courses that currently have no students enrolled.
+    SELECT e.emp_name as employee,d.dept_name as department FROM employees e LEFT JOIN departments d ON e.dept_id=d.dept_id;
 
-    SELECT c.course_name
-    FROM courses c
-    LEFT JOIN enrollments e
-    ON c.course_id = e.course_id
-    WHERE e.course_id IS NULL;
-
-| course_name      |
-| ---------------- |
-| Data Analytics   |
-| Machine Learning |
-
----
-**Query #3**
-
-    -- 3. Display all instructors and the courses they teach, including instructors who are not assigned to any course.
-
-    SELECT i.instructor_name, c.course_name
-    FROM instructors i
-    LEFT JOIN courses c
-    ON i.instructor_id = c.instructor_id;
-
-| instructor_name | course_name         |
-| --------------- | ------------------- |
-| Sarah Connor    | SQL Basics          |
-| Michael Scott   | Python Fundamentals |
-| Tony Stark      | Cloud Computing     |
-| Bruce Wayne     | Cyber Security      |
+| employee | department |
+| -------- | ---------- |
+| Karthik  | HR         |
+| Ajay     | HR         |
+| Vijay    | IT         |
+| Vinay    | IT         |
+| Meena    | Finance    |
+| Veer     | Marketing  |
+| Keerthi  | Sales      |
+| Priya    | Sales      |
 
 ---
-**Query #4**
+**Query #3**--List the names of employees who report to a manager, along with their manager's name, from the "employees" table.
 
-    -- 4. Find all courses that do not have an instructor assigned.
 
-    SELECT course_name
-    FROM courses
-    WHERE instructor_id IS NULL;
+    SELECT e.emp_name,m.emp_name FROM employees e INNER JOIN employees m ON e.manager_id=m.emp_id;
 
-| course_name      |
-| ---------------- |
-| Data Analytics   |
-| Machine Learning |
-
----
-**Query #5**
-
-    -- 5. Display all students and enrollment information using a RIGHT JOIN.
-
-    SELECT s.student_name,
-           e.enrollment_id,
-           e.course_id,
-           e.enrollment_date
-    FROM students s
-    RIGHT JOIN enrollments e
-    ON s.student_id = e.student_id;
-
-| student_name  | enrollment_id | course_id | enrollment_date |
-| ------------- | ------------- | --------- | --------------- |
-| Alice Johnson | 1             | 101       | 2024-01-10      |
-| Alice Johnson | 2             | 102       | 2024-01-12      |
-| Bob Smith     | 3             | 101       | 2024-01-15      |
-| Charlie Brown | 4             | 104       | 2024-01-20      |
-| Diana Prince  | 5             | 106       | 2024-01-25      |
+| emp_name | emp_name |
+| -------- | -------- |
+| Ajay     | Karthik  |
+| Vijay    | Karthik  |
+| Vinay    | Ajay     |
+| Meena    | Vijay    |
+| Keerthi  | Vinay    |
+| Priya    | Vinay    |
 
 ---
-**Query #6**
+**Query #4**--Display a list of employees who do not belong to any department, even if the department data is missing.
 
-    -- 6. Find students who are not enrolled in any course.
+    SELECT e.emp_name FROM employees e LEFT JOIN departments d ON e.dept_id = d.dept_id WHERE d.dept_id IS NULL;
 
-    SELECT s.student_name
-    FROM students s
-    LEFT JOIN enrollments e
-    ON s.student_id = e.student_id
-    WHERE e.student_id IS NULL;
-
-| student_name |
-| ------------ |
-| Ethan Hunt   |
-| Fiona Green  |
+There are no results to be displayed.
 
 ---
-**Query #7**
+**Query #5**--Fetch the names of employees and the projects they are assigned to. For employees who are not assigned any projects, show NULL for the project.
 
-    -- 7. Use FULL OUTER JOIN logic in MySQL 
-    -- (MySQL does not support FULL OUTER JOIN directly)
+    SELECT e.emp_name as employee,p.project_name as project FROM employees e LEFT JOIN projects p ON e.emp_id=p.emp_id;
 
-    SELECT s.student_name,
-           e.enrollment_id,
-           e.course_id,
-           e.enrollment_date
-    FROM students s
-    LEFT JOIN enrollments e
-    ON s.student_id = e.student_id
-
-    UNION
-
-    SELECT s.student_name,
-           e.enrollment_id,
-           e.course_id,
-           e.enrollment_date
-    FROM students s
-    RIGHT JOIN enrollments e
-    ON s.student_id = e.student_id;
-
-| student_name  | enrollment_id | course_id | enrollment_date |
-| ------------- | ------------- | --------- | --------------- |
-| Alice Johnson | 1             | 101       | 2024-01-10      |
-| Alice Johnson | 2             | 102       | 2024-01-12      |
-| Bob Smith     | 3             | 101       | 2024-01-15      |
-| Charlie Brown | 4             | 104       | 2024-01-20      |
-| Diana Prince  | 5             | 106       | 2024-01-25      |
-| Ethan Hunt    |               |           |                 |
-| Fiona Green   |               |           |                 |
+| employee | project   |
+| -------- | --------- |
+| Karthik  | Project A |
+| Ajay     | Project B |
+| Vijay    | Project C |
+| Vinay    | Project D |
+| Meena    | Project E |
+| Veer     |           |
+| Keerthi  |           |
+| Priya    |           |
 
 ---
-**Query #8**
+**Query #6**--List all employees who have completed at least one project, showing their names and the project names.
 
-    -- 8. Find all courses that have never appeared in the enrollments table.
+    SELECT DISTINCT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    INNER JOIN projects p ON e.emp_id = p.emp_id;
 
-    SELECT c.course_name
-    FROM courses c
-    LEFT JOIN enrollments e
-    ON c.course_id = e.course_id
-    WHERE e.course_id IS NULL;
-
-| course_name      |
-| ---------------- |
-| Data Analytics   |
-| Machine Learning |
-
----
-**Query #9**
-
-    -- 9. Display all instructors and courses using FULL OUTER JOIN logic in MySQL
-
-    SELECT i.instructor_name,
-           c.course_name
-    FROM instructors i
-    LEFT JOIN courses c
-    ON i.instructor_id = c.instructor_id
-
-    UNION
-
-    SELECT i.instructor_name,
-           c.course_name
-    FROM instructors i
-    RIGHT JOIN courses c
-    ON i.instructor_id = c.instructor_id;
-
-| instructor_name | course_name         |
-| --------------- | ------------------- |
-| Sarah Connor    | SQL Basics          |
-| Michael Scott   | Python Fundamentals |
-| Tony Stark      | Cloud Computing     |
-| Bruce Wayne     | Cyber Security      |
-|                 | Data Analytics      |
-|                 | Machine Learning    |
+| employee | project   |
+| -------- | --------- |
+| Karthik  | Project A |
+| Ajay     | Project B |
+| Vijay    | Project C |
+| Vinay    | Project D |
+| Meena    | Project E |
 
 ---
-**Query #10**
+**Query #7**--Employees and projects (include projects without employees):
 
-    -- 10. Create a report showing:
-    -- student name, course name, and instructor name
+    SELECT DISTINCT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    INNER JOIN projects p ON e.emp_id = p.emp_id;
 
-    SELECT s.student_name,
-           c.course_name,
-           i.instructor_name
-    FROM students s
-    LEFT JOIN enrollments e
-    ON s.student_id = e.student_id
-    LEFT JOIN courses c
-    ON e.course_id = c.course_id
-    LEFT JOIN instructors i
-    ON c.instructor_id = i.instructor_id;
-
-| student_name  | course_name         | instructor_name |
-| ------------- | ------------------- | --------------- |
-| Alice Johnson | SQL Basics          | Sarah Connor    |
-| Alice Johnson | Python Fundamentals | Michael Scott   |
-| Bob Smith     | SQL Basics          | Sarah Connor    |
-| Charlie Brown | Cloud Computing     | Tony Stark      |
-| Diana Prince  | Cyber Security      | Bruce Wayne     |
-| Ethan Hunt    |                     |                 |
-| Fiona Green   |                     |                 |
+| employee | project   |
+| -------- | --------- |
+| Karthik  | Project A |
+| Ajay     | Project B |
+| Vijay    | Project C |
+| Vinay    | Project D |
+| Meena    | Project E |
 
 ---
-**Query #11**
+**Query #8**--Employees and their departments (include employees without departments):
 
-    -- Bonus Challenge:
-    -- List every student and every course,
-    -- even if there is no enrollment relationship between them
+    SELECT e.emp_name AS employee,
+           d.dept_name AS department
+    FROM employees e
+    LEFT JOIN departments d ON e.dept_id = d.dept_id;
 
-    SELECT s.student_name,
-           c.course_name
-    FROM students s
-    CROSS JOIN courses c;
+| employee | department |
+| -------- | ---------- |
+| Karthik  | HR         |
+| Ajay     | HR         |
+| Vijay    | IT         |
+| Vinay    | IT         |
+| Meena    | Finance    |
+| Veer     | Marketing  |
+| Keerthi  | Sales      |
+| Priya    | Sales      |
 
-| student_name  | course_name         |
-| ------------- | ------------------- |
-| Alice Johnson | SQL Basics          |
-| Bob Smith     | SQL Basics          |
-| Charlie Brown | SQL Basics          |
-| Diana Prince  | SQL Basics          |
-| Ethan Hunt    | SQL Basics          |
-| Fiona Green   | SQL Basics          |
-| Alice Johnson | Python Fundamentals |
-| Bob Smith     | Python Fundamentals |
-| Charlie Brown | Python Fundamentals |
-| Diana Prince  | Python Fundamentals |
-| Ethan Hunt    | Python Fundamentals |
-| Fiona Green   | Python Fundamentals |
-| Alice Johnson | Data Analytics      |
-| Bob Smith     | Data Analytics      |
-| Charlie Brown | Data Analytics      |
-| Diana Prince  | Data Analytics      |
-| Ethan Hunt    | Data Analytics      |
-| Fiona Green   | Data Analytics      |
-| Alice Johnson | Cloud Computing     |
-| Bob Smith     | Cloud Computing     |
-| Charlie Brown | Cloud Computing     |
-| Diana Prince  | Cloud Computing     |
-| Ethan Hunt    | Cloud Computing     |
-| Fiona Green   | Cloud Computing     |
-| Alice Johnson | Machine Learning    |
-| Bob Smith     | Machine Learning    |
-| Charlie Brown | Machine Learning    |
-| Diana Prince  | Machine Learning    |
-| Ethan Hunt    | Machine Learning    |
-| Fiona Green   | Machine Learning    |
-| Alice Johnson | Cyber Security      |
-| Bob Smith     | Cyber Security      |
-| Charlie Brown | Cyber Security      |
-| Diana Prince  | Cyber Security      |
-| Ethan Hunt    | Cyber Security      |
-| Fiona Green   | Cyber Security      |
+---
+**Query #9**--Departments and employees (include departments with no employees):
+
+    SELECT d.dept_name AS department,
+           e.emp_name AS employee
+    FROM departments d
+    LEFT JOIN employees e ON d.dept_id = e.dept_id;
+
+| department | employee |
+| ---------- | -------- |
+| HR         | Karthik  |
+| HR         | Ajay     |
+| IT         | Vijay    |
+| IT         | Vinay    |
+| Finance    | Meena    |
+| Marketing  | Veer     |
+| Sales      | Keerthi  |
+| Sales      | Priya    |
+
+---
+**Query #10**--Employees without projects (show project details if applicable):
+
+    SELECT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    LEFT JOIN projects p ON e.emp_id = p.emp_id
+    WHERE p.project_id IS NULL;
+
+| employee | project |
+| -------- | ------- |
+| Veer     |         |
+| Keerthi  |         |
+| Priya    |         |
+
+---
+**Query #11**--Employees and projects (include employees without projects):
+
+    SELECT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    LEFT JOIN projects p ON e.emp_id = p.emp_id;
+
+| employee | project   |
+| -------- | --------- |
+| Karthik  | Project A |
+| Ajay     | Project B |
+| Vijay    | Project C |
+| Vinay    | Project D |
+| Meena    | Project E |
+| Veer     |           |
+| Keerthi  |           |
+| Priya    |           |
+
+---
+**Query #12**--Projects and employees (include projects without employees):
+
+    SELECT p.project_name AS project,
+           e.emp_name AS employee
+    FROM projects p
+    LEFT JOIN employees e ON p.emp_id = e.emp_id;
+
+| project   | employee |
+| --------- | -------- |
+| Project A | Karthik  |
+| Project B | Ajay     |
+| Project C | Vijay    |
+| Project D | Vinay    |
+| Project E | Meena    |
+
+---
+**Query #13**--Employees with both a manager and at least one project:
+
+    SELECT e.emp_name AS employee,
+           m.emp_name AS manager,
+           p.project_name AS project
+    FROM employees e
+    INNER JOIN employees m ON e.manager_id = m.emp_id
+    INNER JOIN projects p ON e.emp_id = p.emp_id;
+
+| employee | manager | project   |
+| -------- | ------- | --------- |
+| Ajay     | Karthik | Project B |
+| Vijay    | Karthik | Project C |
+| Vinay    | Ajay    | Project D |
+| Meena    | Vijay   | Project E |
+
+---
+**Query #14**--Employees and departments (exclude employees without departments)
+
+    SELECT e.emp_name AS employee,
+           d.dept_name AS department
+    FROM employees e
+    INNER JOIN departments d ON e.dept_id = d.dept_id;
+
+| employee | department |
+| -------- | ---------- |
+| Karthik  | HR         |
+| Ajay     | HR         |
+| Vijay    | IT         |
+| Vinay    | IT         |
+| Meena    | Finance    |
+| Veer     | Marketing  |
+| Keerthi  | Sales      |
+| Priya    | Sales      |
+
+---
+**Query #15**--Departments and employees (include departments with no employees)
+
+    SELECT d.dept_name AS department,
+           e.emp_name AS employee
+    FROM departments d
+    LEFT JOIN employees e ON d.dept_id = e.dept_id;
+
+| department | employee |
+| ---------- | -------- |
+| HR         | Karthik  |
+| HR         | Ajay     |
+| IT         | Vijay    |
+| IT         | Vinay    |
+| Finance    | Meena    |
+| Marketing  | Veer     |
+| Sales      | Keerthi  |
+| Sales      | Priya    |
+
+---
+**Query #16**--Employees with projects but no department
+
+    SELECT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    INNER JOIN projects p ON e.emp_id = p.emp_id
+    LEFT JOIN departments d ON e.dept_id = d.dept_id
+    WHERE d.dept_id IS NULL;
+
+There are no results to be displayed.
+
+---
+**Query #17**--Number of employees per department (include departments with no employees)
+
+    SELECT d.dept_name AS department,
+           COUNT(e.emp_id) AS employee_count
+    FROM departments d
+    LEFT JOIN employees e ON d.dept_id = e.dept_id
+    GROUP BY d.dept_name;
+
+| department | employee_count |
+| ---------- | -------------- |
+| Finance    | 1              |
+| HR         | 2              |
+| IT         | 2              |
+| Marketing  | 1              |
+| Sales      | 2              |
+
+---
+**Query #18**--Employees and managers (only those with managers)
+
+    SELECT e.emp_name AS employee,
+           m.emp_name AS manager
+    FROM employees e
+    INNER JOIN employees m ON e.manager_id = m.emp_id;
+
+| employee | manager |
+| -------- | ------- |
+| Ajay     | Karthik |
+| Vijay    | Karthik |
+| Vinay    | Ajay    |
+| Meena    | Vijay   |
+| Keerthi  | Vinay   |
+| Priya    | Vinay   |
+
+---
+**Query #19**--Employees and managers (include employees without managers)
+
+    SELECT e.emp_name AS employee,
+           m.emp_name AS manager
+    FROM employees e
+    LEFT JOIN employees m ON e.manager_id = m.emp_id;
+
+| employee | manager |
+| -------- | ------- |
+| Karthik  |         |
+| Ajay     | Karthik |
+| Vijay    | Karthik |
+| Vinay    | Ajay    |
+| Meena    | Vijay   |
+| Veer     |         |
+| Keerthi  | Vinay   |
+| Priya    | Vinay   |
+
+---
+**Query #20**--Employees and departments (include departments with no employees)
+
+    SELECT d.dept_name AS department,
+           COUNT(e.emp_id) AS employee_count
+    FROM departments d
+    LEFT JOIN employees e ON d.dept_id = e.dept_id
+    GROUP BY d.dept_name;
+
+| department | employee_count |
+| ---------- | -------------- |
+| Finance    | 1              |
+| HR         | 2              |
+| IT         | 2              |
+| Marketing  | 1              |
+| Sales      | 2              |
+
+---
+**Query #21**--Employees and projects (include employees without projects)
+
+    SELECT e.emp_name AS employee,
+           p.project_name AS project
+    FROM employees e
+    LEFT JOIN projects p ON e.emp_id = p.emp_id;
+
+| employee | project   |
+| -------- | --------- |
+| Karthik  | Project A |
+| Ajay     | Project B |
+| Vijay    | Project C |
+| Vinay    | Project D |
+| Meena    | Project E |
+| Veer     |           |
+| Keerthi  |           |
+| Priya    |           |
+
+---
+**Query #22**--Employees with department and project (include missing ones)
+
+    SELECT e.emp_name AS employee,
+           d.dept_name AS department,
+           p.project_name AS project
+    FROM employees e
+    LEFT JOIN departments d ON e.dept_id = d.dept_id
+    LEFT JOIN projects p ON e.emp_id = p.emp_id;
+
+| employee | department | project   |
+| -------- | ---------- | --------- |
+| Karthik  | HR         | Project A |
+| Ajay     | HR         | Project B |
+| Vijay    | IT         | Project C |
+| Vinay    | IT         | Project D |
+| Meena    | Finance    | Project E |
+| Veer     | Marketing  |           |
+| Keerthi  | Sales      |           |
+| Priya    | Sales      |           |
+
+---
+**Query #23**--Employees and departments (include employees without departments)
+
+    SELECT e.emp_name AS employee,
+           d.dept_name AS department
+    FROM employees e
+    LEFT JOIN departments d ON e.dept_id = d.dept_id;
+
+| employee | department |
+| -------- | ---------- |
+| Karthik  | HR         |
+| Ajay     | HR         |
+| Vijay    | IT         |
+| Vinay    | IT         |
+| Meena    | Finance    |
+| Veer     | Marketing  |
+| Keerthi  | Sales      |
+| Priya    | Sales      |
